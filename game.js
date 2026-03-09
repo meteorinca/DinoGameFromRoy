@@ -11,11 +11,11 @@
     const CANVAS_WIDTH = 750;
     const CANVAS_HEIGHT = 250;
     const GROUND_Y = 176;
-    const GRAVITY = 0.58;
-    const JUMP_FORCE = -12;
-    const INITIAL_SPEED = 6;
-    const MAX_SPEED = 14;
-    const SPEED_INCREMENT = 0.001;
+    const GRAVITY = 0.45;
+    const JUMP_FORCE = -10.5;
+    const INITIAL_SPEED = 4.5;
+    const MAX_SPEED = 12;
+    const SPEED_INCREMENT = 0.0006;
     const MIN_OBSTACLE_GAP = 300;
     const NIGHT_SCORE = 700;
     const MILESTONE_INTERVAL = 100;
@@ -175,7 +175,7 @@
                 y: GROUND_Y + dino.height - s.height,
                 width: s.width,
                 height: s.height,
-                hitboxShrink: 4,
+                hitboxShrink: 8,
             };
         } else if (type < 0.55) {
             // Large cactus
@@ -187,7 +187,7 @@
                 y: GROUND_Y + dino.height - s.height,
                 width: s.width,
                 height: s.height,
-                hitboxShrink: 5,
+                hitboxShrink: 10,
             };
         } else if (type < 0.75) {
             // Cactus cluster
@@ -199,7 +199,7 @@
                 y: GROUND_Y + dino.height - s.height,
                 width: s.width,
                 height: s.height,
-                hitboxShrink: 5,
+                hitboxShrink: 10,
             };
         } else {
             // Bird / Pterodactyl
@@ -225,7 +225,7 @@
                     height: sprites.bird.height,
                     animFrame: 0,
                     animTimer: 0,
-                    hitboxShrink: 6,
+                    hitboxShrink: 10,
                 };
             } else {
                 // Normal bird at random heights
@@ -244,7 +244,7 @@
                     height: sprites.bird.height,
                     animFrame: 0,
                     animTimer: 0,
-                    hitboxShrink: 6,
+                    hitboxShrink: 10,
                 };
             }
         }
@@ -336,6 +336,7 @@
         nightMode = false;
         nightTransition = 0;
         invincibleTimer = 0;
+        lives = maxLives;
 
         dino.y = GROUND_Y;
         dino.vy = 0;
@@ -552,10 +553,10 @@
             if (invincibleTimer <= 0) {
                 const s = obs.hitboxShrink || 0;
                 const dinoHitbox = {
-                    x: dino.x + 6,
-                    y: dino.y + (dino.ducking ? dino.height - sprites.dino.duckHeight + 3 : 3),
-                    width: (dino.ducking ? sprites.dino.duckWidth : dino.width) - 12,
-                    height: (dino.ducking ? sprites.dino.duckHeight : dino.height) - 6,
+                    x: dino.x + 12,
+                    y: dino.y + (dino.ducking ? dino.height - sprites.dino.duckHeight + 8 : 8),
+                    width: (dino.ducking ? sprites.dino.duckWidth : dino.width) - 24,
+                    height: (dino.ducking ? sprites.dino.duckHeight : dino.height) - 16,
                 };
 
                 const obsHitbox = {
