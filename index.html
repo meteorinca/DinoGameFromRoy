@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div id="game-wrapper">
         <canvas id="game-canvas"></canvas>
@@ -19,6 +21,15 @@
                 <p>Press <kbd>SPACE</kbd> or <kbd>↑</kbd> to jump</p>
                 <p>Press <kbd>↓</kbd> to duck</p>
                 <p class="mobile-hint">Tap to jump • Swipe down to duck</p>
+                <div class="difficulty-select" style="margin: 15px 0;">
+                    <label style="color:#535353;" for="difficulty">Difficulty: </label>
+                    <select id="difficulty"
+                        style="padding: 5px; font-family: 'Press Start 2P', cursive; font-size: 10px;">
+                        <option value="easy">Easy (5 Lives)</option>
+                        <option value="med" selected>Med (3 Lives)</option>
+                        <option value="hard">Hard (1 Life)</option>
+                    </select>
+                </div>
                 <button id="start-btn">START GAME</button>
             </div>
         </div>
@@ -26,4 +37,5 @@
     <script src="sprites.js"></script>
     <script src="game.js"></script>
 </body>
+
 </html>

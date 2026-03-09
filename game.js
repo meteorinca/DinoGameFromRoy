@@ -136,6 +136,13 @@
     let shakeTimer = 0;
     let shakeIntensity = 0;
     let timeSinceLastBird = 0;
+    let lives = 0;
+    let maxLives = 0;
+    let invincibleTimer = 0;
+    let obstacleLagTimer = 0;
+    let difficulty = 'med';
+
+    const difficultySelect = document.getElementById('difficulty');
 
     // ===== DINO =====
     const dino = {
@@ -328,6 +335,7 @@
         shakeTimer = 0;
         nightMode = false;
         nightTransition = 0;
+        invincibleTimer = 0;
 
         dino.y = GROUND_Y;
         dino.vy = 0;
@@ -341,6 +349,21 @@
     }
 
     function startGame() {
+        if (difficultySelect) {
+            difficulty = difficultySelect.value;
+        }
+        if (difficulty === 'easy') {
+            maxLives = 5;
+            obstacleLagTimer = 180; // longer wait before start
+        } else if (difficulty === 'med') {
+            maxLives = 3;
+            obstacleLagTimer = 120;
+        } else {
+            maxLives = 1;
+            obstacleLagTimer = 60; // shorter wait
+        }
+        lives = maxLives;
+
         startScreen.classList.add('hidden');
         resetGame();
         gameState = 'playing';
@@ -387,8 +410,14 @@
     // ===== UPDATE =====
     function update() {
         frameCount++;
-        speed = Math.min(MAX_SPEED, INITIAL_SPEED + frameCount * SPEED_INCREMENT);
+
+        // Adjust speed curve base on difficulty
+        const diffSpeedMult = difficulty === 'hard' ? 1.2 : (difficulty === 'easy' ? 0.8 : 1.0);
+        speed = Math.min(MAX_SPEED * diffSpeedMult, (INITIAL_SPEED + frameCount * SPEED_INCREMENT) * diffSpeedMult);
         score = Math.floor(frameCount * speed * 0.01);
+
+        if (invincibleTimer > 0) invincibleTimer--;
+        if (obstacleLagTimer > 0) obstacleLagTimer--;
 
         // Milestone sound
         const currentMilestone = Math.floor(score / MILESTONE_INTERVAL);
@@ -450,12 +479,14 @@
         timeSinceLastBird++;
 
         // Obstacle spawning
-        distanceSinceLastObstacle += speed;
-        const gap = MIN_OBSTACLE_GAP - speed * 8;
-        if (distanceSinceLastObstacle > Math.max(gap, 200)) {
-            if (Math.random() < 0.02 * speed) {
-                createObstacle();
-                distanceSinceLastObstacle = 0;
+        if (obstacleLagTimer <= 0) {
+            distanceSinceLastObstacle += speed;
+            const gap = MIN_OBSTACLE_GAP - speed * 8;
+            if (distanceSinceLastObstacle > Math.max(gap, 200)) {
+                if (Math.random() < 0.02 * speed) {
+                    createObstacle();
+                    distanceSinceLastObstacle = 0;
+                }
             }
         }
 
@@ -488,6 +519,27 @@
                     }
                     // In 'level' phase, bird just flies straight at ground level
                 }
+
+                // Birds occasionally shoot daggers (more often on hard)
+                const shootChance = difficulty === 'hard' ? 0.02 : (difficulty === 'med' ? 0.01 : 0.005);
+                if (obs.x > 100 && obs.x < CANVAS_WIDTH && Math.random() < shootChance && !obs.hasShot) {
+                    obs.hasShot = true; // limit to one shot just to not spam
+                    obstacles.push({
+                        type: 'dagger',
+                        sprite: sprites.dagger,
+                        x: obs.x,
+                        y: obs.y + obs.height / 2,
+                        width: 20,
+                        height: 6,
+                        hitboxShrink: 0,
+                    });
+                }
+            }
+
+            if (obs.type === 'dagger') {
+                obs.x -= speed * 1.5; // Daggers move faster
+            } else {
+                obs.x -= speed;
             }
 
             // Remove off-screen
@@ -497,24 +549,38 @@
             }
 
             // Collision detection with hitbox shrinking for fairness
-            const s = obs.hitboxShrink || 0;
-            const dinoHitbox = {
-                x: dino.x + 6,
-                y: dino.y + (dino.ducking ? dino.height - sprites.dino.duckHeight + 3 : 3),
-                width: (dino.ducking ? sprites.dino.duckWidth : dino.width) - 12,
-                height: (dino.ducking ? sprites.dino.duckHeight : dino.height) - 6,
-            };
+            if (invincibleTimer <= 0) {
+                const s = obs.hitboxShrink || 0;
+                const dinoHitbox = {
+                    x: dino.x + 6,
+                    y: dino.y + (dino.ducking ? dino.height - sprites.dino.duckHeight + 3 : 3),
+                    width: (dino.ducking ? sprites.dino.duckWidth : dino.width) - 12,
+                    height: (dino.ducking ? sprites.dino.duckHeight : dino.height) - 6,
+                };
 
-            const obsHitbox = {
-                x: obs.x + s,
-                y: obs.y + s,
-                width: obs.width - s * 2,
-                height: obs.height - s * 2,
-            };
+                const obsHitbox = {
+                    x: obs.x + s,
+                    y: obs.y + s,
+                    width: obs.width - s * 2,
+                    height: obs.height - s * 2,
+                };
 
-            if (checkCollision(dinoHitbox, obsHitbox)) {
-                gameOver();
-                return;
+                if (checkCollision(dinoHitbox, obsHitbox)) {
+                    lives--;
+                    if (lives <= 0) {
+                        gameOver();
+                        return;
+                    } else {
+                        // Take down the obstacle that was hit and grant i-frames
+                        obstacles.splice(i, 1);
+                        invincibleTimer = 60;
+                        AudioEngine.playDie(); // plays a hit sound
+                        shakeTimer = 5;
+                        shakeIntensity = 3;
+                        spawnDustParticles();
+                        continue;
+                    }
+                }
             }
         }
 
@@ -636,7 +702,10 @@
         }
 
         if (nightMode) ctx.filter = 'invert(1)';
-        ctx.drawImage(dinoSprite, drawX, drawY);
+        // Make dino blink if invincible
+        if (invincibleTimer === 0 || Math.floor(invincibleTimer / 5) % 2 === 0) {
+            ctx.drawImage(dinoSprite, drawX, drawY);
+        }
         ctx.filter = 'none';
 
         // Particles
@@ -678,7 +747,11 @@
             ctx.fillStyle = textColor;
         }
         ctx.fillText(String(score).padStart(5, '0'), CANVAS_WIDTH - 15, 25);
+
+        // Draw Lives
+        ctx.fillStyle = textColor;
         ctx.textAlign = 'left';
+        ctx.fillText(`LIVES: ${lives}`, 15, 25);
     }
 
     function renderGameOver() {
