@@ -1,0 +1,204 @@
+/* ===== RESET & BASE ===== */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-day: #f7f7f7;
+    --bg-night: #1a1a2e;
+    --text-day: #535353;
+    --text-night: #e0e0e0;
+    --accent: #57a773;
+    --accent-glow: #57a77366;
+    --font-game: 'Press Start 2P', monospace;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    font-family: var(--font-game);
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ===== GAME WRAPPER ===== */
+#game-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+        0 0 40px rgba(87, 167, 115, 0.15),
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+#game-wrapper:hover {
+    box-shadow:
+        0 0 60px rgba(87, 167, 115, 0.25),
+        0 20px 80px rgba(0, 0, 0, 0.6),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+#game-canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ===== START SCREEN OVERLAY ===== */
+#start-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(247, 247, 247, 0.97);
+    z-index: 10;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    overflow: hidden;
+}
+
+#start-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.start-content {
+    text-align: center;
+    animation: fadeInUp 0.6s ease-out;
+    padding: 10px 20px;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dino-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+    animation: bounce 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.start-content h1 {
+    font-family: var(--font-game);
+    font-size: 22px;
+    color: #535353;
+    margin-bottom: 12px;
+    letter-spacing: 4px;
+    text-shadow: 2px 2px 0 #ddd;
+    line-height: 1.2;
+    flex-shrink: 0;
+}
+
+.start-content p {
+    font-family: var(--font-game);
+    font-size: 9px;
+    color: #888;
+    margin-bottom: 6px;
+    line-height: 1.6;
+    flex-shrink: 0;
+}
+
+.start-content kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-family: var(--font-game);
+    font-size: 8px;
+    color: #555;
+    background: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 #bbb;
+}
+
+.mobile-hint {
+    color: #aaa !important;
+    font-size: 7px !important;
+    margin-bottom: 4px !important;
+}
+
+#start-btn {
+    margin-top: 12px;
+    padding: 10px 32px;
+    font-family: var(--font-game);
+    font-size: 12px;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #3d8a5a, 0 6px 20px rgba(87, 167, 115, 0.3);
+    flex-shrink: 0;
+}
+
+#start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #3d8a5a, 0 8px 30px rgba(87, 167, 115, 0.4);
+}
+
+#start-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #3d8a5a, 0 3px 10px rgba(87, 167, 115, 0.2);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 800px) {
+    #game-wrapper {
+        border-radius: 0;
+        width: 100vw;
+    }
+
+    .start-content h1 {
+        font-size: 18px;
+    }
+
+    .dino-icon {
+        font-size: 32px;
+    }
+
+    #start-btn {
+        font-size: 11px;
+        padding: 10px 28px;
+    }
+}
